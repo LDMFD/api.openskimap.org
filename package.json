@@ -22,6 +22,7 @@
     "typescript": "^5"
   },
   "scripts": {
+    "test-connection": "node -r ts-node/register src/scripts/test_connection.ts",
     "import-data": "node -r ts-node/register src/scripts/import_data.ts",
     "drop-database": "node -r ts-node/register src/scripts/drop_database.ts",
     "build": "tsc -p .",

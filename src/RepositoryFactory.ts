@@ -6,9 +6,12 @@ export default async function getRepository(): Promise<Repository> {
   const client = new arangojs.Database(Config.arangodb.url);
 
   try {
+    console.log(`Attempting to create database: ${Config.arangodb.database}`);
     await client.createDatabase(Config.arangodb.database);
-  } catch (_) {}
-
+    console.log("Database created successfully");
+  } catch (error) {
+    console.error("Error creating database:", error);
+  }
 
   client.database(Config.arangodb.database);
 
