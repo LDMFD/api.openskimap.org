@@ -9,7 +9,21 @@ import getRepository from "../RepositoryFactory";
     console.log(`Database: ${Config.arangodb.database}`);
     
     // First test raw connection
-    const client = new arangojs.Database(Config.arangodb.url);
+    // const client = new arangojs.Database(Config.arangodb.url);
+    // TEMP: For testing connection with explicit credentials
+    const dbUrl = new URL(Config.arangodb.url);
+    const username = dbUrl.username || "root"; // Default to root if not in URL
+    const password = dbUrl.password || "offskimap"; // Default to offskimap if not in URL
+    
+    // Ensure the URL passed to arangojs.Database does not contain credentials
+    dbUrl.username = "";
+    dbUrl.password = "";
+
+    const client = new arangojs.Database({
+      url: dbUrl.toString(),
+      auth: { username: username, password: password },
+    });
+
     console.log("\nListing all databases:");
     const databases = await client.listDatabases();
     console.log(databases);

@@ -12,6 +12,8 @@ fi
 
 echo "Using ArangoDB URL: $ARANGODB_URL"
 
+export ARANGO_ROOT_PASSWORD=offskimap
+
 # Run the import with the intermediate files
 npm run import-data \
     ../openskidata-processor/data/intermediate_ski_areas.geojson \

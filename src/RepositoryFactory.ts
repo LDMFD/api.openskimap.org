@@ -3,7 +3,18 @@ import * as Config from "./Config";
 import { Repository } from "./Repository";
 
 export default async function getRepository(): Promise<Repository> {
-  const client = new arangojs.Database(Config.arangodb.url);
+  const dbUrl = new URL(Config.arangodb.url);
+  const username = dbUrl.username || "root"; // Default to root if not in URL
+  const password = dbUrl.password || "offskimap"; // Default to empty if not in URL, adjust if needed
+
+  // Ensure the URL passed to arangojs.Database does not contain credentials
+  dbUrl.username = "";
+  dbUrl.password = "";
+
+  const client = new arangojs.Database({
+    url: dbUrl.toString(),
+    auth: { username: username, password: password },
+  });
 
   try {
     const databaseName = Config.arangodb.database;
