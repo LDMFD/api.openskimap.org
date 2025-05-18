@@ -6,16 +6,22 @@ export default async function getRepository(): Promise<Repository> {
   const client = new arangojs.Database(Config.arangodb.url);
 
   try {
-    console.log(`Attempting to create database: ${Config.arangodb.database}`);
-    await client.createDatabase(Config.arangodb.database);
-    console.log("Database created successfully");
+    const databaseName = Config.arangodb.database;
+    const databases = await client.listDatabases();
+    if (databases.includes(databaseName)) {
+      console.log(`Database '${databaseName}' already exists.`);
+    } else {
+      console.log(`Database '${databaseName}' not found, attempting to create it.`);
+      await client.createDatabase(databaseName);
+      console.log(`Database '${databaseName}' created successfully.`);
+    }
   } catch (error) {
-    console.error("Error creating database:", error);
+    console.error("Error during database check or creation:", error);
   }
 
-  client.database(Config.arangodb.database);
+  const db = client.database(Config.arangodb.database);
 
-  await client.createAnalyzer('en_edge_ngram_v2', {
+  await db.createAnalyzer('en_edge_ngram_v2', {
     type: 'text',
     properties: {
       locale: 'en',
@@ -30,7 +36,7 @@ export default async function getRepository(): Promise<Repository> {
     }
   })
 
-  const featuresCollection = client.collection(
+  const featuresCollection = db.collection(
     Config.arangodb.featuresCollection
   );
   try {
@@ -40,18 +46,18 @@ export default async function getRepository(): Promise<Repository> {
   await featuresCollection.ensureIndex({type: "geo", fields: ["geometry"], geoJson: true})
   await featuresCollection.ensureIndex({
     type: 'inverted',
-    name: 'textSearch_v2',
+    name: 'textSearch',
     fields: [{name: 'searchableText[*]', analyzer: 'en_edge_ngram_v2'}, {name: 'type'}]
   })
 
-  const view = await client.view('textSearch');
+  const view = await db.view('textSearch');
   const viewExists = await view.exists();
   if (!viewExists) {
-    await client.createView(
+    await db.createView(
       'textSearch',
       {type: "search-alias", indexes: [{collection: featuresCollection.name, index: 'textSearch'}]}
     );
   }
 
-  return new Repository(client);
+  return new Repository(db);
 }

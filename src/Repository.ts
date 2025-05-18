@@ -34,10 +34,14 @@ export class Repository {
     text: string,
     limit: number
   ): Promise<(RunFeature | LiftFeature | SkiAreaFeature)[]> => {
+    const viewName = "textSearch";
+    const viewObject = this.database.view(viewName);
+
+    // console.log(`[API Repository] Searching for text: "${text}" with limit: ${limit}`);
+
     const query = arangojs.aql`
-    FOR feature IN ${this.collection}
-    OPTIONS { indexHint: "textSearch_v2", forceIndexHint: true }
-    FILTER TOKENS(${text}, "en_edge_ngram_v2") ALL == feature.searchableText 
+    FOR feature IN ${viewObject}
+    SEARCH ANALYZER(TOKENS(${text}, "en_edge_ngram_v2") ALL IN feature.searchableText, "en_edge_ngram_v2")
     LET nameScore = LOWER(feature.properties.name) == LOWER(${text}) ? 3 : 
                     STARTS_WITH(LOWER(feature.properties.name), LOWER(${text})) ? 2 : 
                     CONTAINS(LOWER(feature.properties.name), LOWER(${text})) ? 1 : 0
@@ -48,10 +52,15 @@ export class Repository {
     LIMIT ${limit}
     RETURN feature
     `
-    const cursor = await this.database.query(query);
-    return await cursor
-      .all()
-      .then((results: any[]) => results.map(documentToFeature));
+    try {
+      const cursor = await this.database.query(query);
+      const results = await cursor.all();
+      console.log(`[API Repository] Found ${results.length} results for text: "${text}"`);
+      return results.map(documentToFeature);
+    } catch (error) {
+      console.error(`[API Repository] Error during search for text: "${text}":`, error);
+      throw error;
+    }
   };
 
   removeExceptImport = async (importID: string): Promise<void> => {

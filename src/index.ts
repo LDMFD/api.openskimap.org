@@ -48,6 +48,8 @@ const port = 3000;
         return;
       }
 
+      // console.log(`Searching for ${text}`);
+
       text = text.trim();
       if (text.length === 0) {
         res.send([]);
