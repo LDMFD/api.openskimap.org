@@ -11,6 +11,13 @@ services:
       - db
     depends_on:
       - arangodb
+    volumes:
+      - ./import.sh:/usr/src/app/import.sh
+      - ./node_modules:/usr/src/app/node_modules
+      - ./src:/usr/src/app/src
+      - ./types:/usr/src/app/types
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ../openskidata-processor/data:/usr/src/app/data
 
   arangodb:
     image: arangodb:3.12.1

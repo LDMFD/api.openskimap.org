@@ -5,7 +5,7 @@ IMAGE_NAME ?= api-openskimap-org
 CONTAINER_PORT ?= 3000
 HOST_PORT ?= 3000
 
-.PHONY: build run
+.PHONY: build run import
 
 # Target to build the Docker image
 build:
@@ -15,3 +15,10 @@ build:
 # It maps HOST_PORT on the host to CONTAINER_PORT in the container
 run:
 	docker run -p $(HOST_PORT):$(CONTAINER_PORT) $(IMAGE_NAME) 
+
+# Target to run the import.sh script in the prod-api container
+import:
+	chmod +x import.sh
+	docker-compose -f docker-compose.prod.yml down
+	docker-compose -f docker-compose.prod.yml up -d
+	docker-compose -f docker-compose.prod.yml exec prod-api sh /usr/src/app/import.sh 
