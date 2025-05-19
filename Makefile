@@ -18,7 +18,4 @@ run:
 
 # Target to run the import.sh script in the prod-api container
 import:
-	chmod +x import.sh
-	docker-compose -f docker-compose.prod.yml down
-	docker-compose -f docker-compose.prod.yml up -d
 	docker-compose -f docker-compose.prod.yml exec prod-api sh /usr/src/app/import.sh 

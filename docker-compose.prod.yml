@@ -3,7 +3,7 @@ services:
   prod-api:
     image: api-openskimap-org
     ports:
-      - 3001:3000
+      - 3000:3000
     environment:
       - NODE_ENV=production
       - ARANGODB_URL=http://arangodb:8529/
@@ -18,6 +18,7 @@ services:
       - ./types:/usr/src/app/types
       - ./tsconfig.json:/usr/src/app/tsconfig.json
       - ../openskidata-processor/data:/usr/src/app/data
+      - ./data:/usr/src/app/data
 
   arangodb:
     image: arangodb:3.12.1
@@ -28,7 +29,7 @@ services:
     networks:
       - db
     volumes:
-      - ./data:/var/lib/arangodb3
+      - ./dbdata:/var/lib/arangodb3
 
 networks:
   db:
